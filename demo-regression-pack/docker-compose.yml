@@ -2,10 +2,18 @@ version: '3.8'
 services:
   web:
     image: python:3.11-slim
+    volumes:
+      - .:/app
+    working_dir: /app
     command: sh -c "pip install fastapi uvicorn python-multipart && uvicorn src.dummy_app:app --host 0.0.0.0 --port 8000"
     ports:
       - "8000:8000"
-  
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
   test-runner:
     image: mcr.microsoft.com/playwright/python:v1.40.0-jammy
     volumes:
@@ -14,5 +22,6 @@ services:
     environment:
       - BASE_URL=http://web:8000
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     command: sh -c "pip install pytest pytest-playwright pytest-html pydantic pyyaml fastapi && playwright install && pytest tests/test_runner.py --junitxml=output/junit.xml --html=output/report.html --self-contained-html --screenshot=only-on-failure --tracing=retain-on-failure --output=output/screenshots/"

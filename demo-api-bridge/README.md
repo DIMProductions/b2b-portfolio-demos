@@ -1,5 +1,7 @@
 # API Bridge Demo (Enterprise-Grade Connector)
 
+> **概要(日本語)**: 旧形式APIのリクエストを、フィールドマッピング(外部設定ファイル)・リトライ(5xxのみ、指数バックオフ)・タイムアウト・冪等性制御(Redis)・構造化ログ(機密情報は自動マスク)を備えたBridge経由で新形式APIに変換します。単なる中継ではなく、本番投入を想定した堅牢性を実装済み。専用`Dockerfile`でビルドされる実際のデプロイ可能イメージです。起動は `docker-compose up --build` のみ。
+
 This repository demonstrates a production-ready API bridge that safely connects a legacy system to a modern SaaS backend.
 It is designed as an independent microservice that absorbs the complexity of integration without requiring changes to your core systems.
 
