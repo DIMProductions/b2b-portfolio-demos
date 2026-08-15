@@ -1,0 +1,23 @@
+[
+  {
+    "employee_id": 2001,
+    "name": "Kenji Ito",
+    "email": "kenji@example.com",
+    "department": "Sales",
+    "source": "sample_01.pdf"
+  },
+  {
+    "employee_id": 3001,
+    "name": "Hanako Sato",
+    "email": "hanako@example.com",
+    "department": "Marketing",
+    "source": "sample_03.pdf"
+  },
+  {
+    "employee_id": 3002,
+    "name": "Yuki Tanaka",
+    "email": "yuki@example.com",
+    "department": "HR",
+    "source": "bulk_import.xlsx"
+  }
+]

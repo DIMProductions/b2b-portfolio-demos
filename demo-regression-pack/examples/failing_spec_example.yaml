@@ -1,0 +1,23 @@
+# Not part of the CI suite (input/test_spec.yaml). This is a deliberately
+# wrong assertion, kept here to demonstrate what a FAIL looks like end to end.
+#
+# Run it directly against a running dummy_app to see the failure artifacts:
+#   BASE_URL=http://127.0.0.1:8000 pytest tests/test_runner.py \
+#     --screenshot=only-on-failure --tracing=retain-on-failure \
+#     --output=output/screenshots -v
+# (after temporarily pointing tests/test_runner.py's load_tests() at this file)
+suite: demo-regression-failing-example
+tests:
+- id: SEARCH-001-BROKEN
+  name: Product Search Flow (intentionally wrong expectation)
+  steps:
+  - action: goto
+    path: /search
+  - action: fill
+    target: query
+    value: Widget
+  - action: click
+    target: search-button
+  - action: expect_text
+    target: results
+    value: THIS_TEXT_WILL_NEVER_APPEAR

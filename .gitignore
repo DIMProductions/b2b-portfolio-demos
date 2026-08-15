@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# internal scaffolding scripts used to bootstrap the demos — not part of the deliverable
+build_demo*_v2.py
+scaffold.py

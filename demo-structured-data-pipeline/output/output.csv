@@ -1,0 +1,4 @@
+employee_id,name,email,department,source
+2001,Kenji Ito,kenji@example.com,Sales,sample_01.pdf
+3001,Hanako Sato,hanako@example.com,Marketing,sample_03.pdf
+3002,Yuki Tanaka,yuki@example.com,HR,bulk_import.xlsx

@@ -1,0 +1,75 @@
+{
+  "total_ingested": 9,
+  "duplicates_removed": 2,
+  "processed": 7,
+  "valid_count": 3,
+  "error_count": 4,
+  "duplicates": [
+    {
+      "raw_data": {
+        "employee_id": 3001,
+        "name": "Hanako Sato",
+        "email": "hanako@example.com",
+        "department": "Marketing",
+        "_source": "bulk_import.xlsx"
+      },
+      "duplicate_of_source": "sample_03.pdf"
+    },
+    {
+      "raw_data": {
+        "employee_id": 3001,
+        "name": "Hanako Sato",
+        "email": "hanako@example.com",
+        "department": "Marketing",
+        "_source": "bulk_import.xlsx"
+      },
+      "duplicate_of_source": "sample_03.pdf"
+    }
+  ],
+  "errors": [
+    {
+      "raw_data": {
+        "employee_id": 2002,
+        "name": "Bob Lee",
+        "email": "bob-example.com",
+        "department": "Engineering"
+      },
+      "source": "sample_02.pdf",
+      "error_type": "SchemaValidationError",
+      "error_msg": "email: 'bob-example.com' does not match '^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$'"
+    },
+    {
+      "raw_data": {
+        "employee_id": "N/A",
+        "name": "No ID Given",
+        "email": "noid@example.com",
+        "department": "Legal"
+      },
+      "source": "bulk_import.xlsx",
+      "error_type": "SchemaValidationError",
+      "error_msg": "employee_id: 'N/A' is not of type 'integer'"
+    },
+    {
+      "raw_data": {
+        "employee_id": 3003,
+        "name": "X",
+        "email": "x@example.com",
+        "department": "Legal"
+      },
+      "source": "bulk_import.xlsx",
+      "error_type": "SchemaValidationError",
+      "error_msg": "name: 'X' is too short"
+    },
+    {
+      "raw_data": {
+        "employee_id": 3004,
+        "name": "Emi Sasaki",
+        "email": "emi.example.com",
+        "department": "Finance"
+      },
+      "source": "bulk_import.xlsx",
+      "error_type": "SchemaValidationError",
+      "error_msg": "email: 'emi.example.com' does not match '^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$'"
+    }
+  ]
+}

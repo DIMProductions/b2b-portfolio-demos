@@ -1,0 +1,17 @@
+{
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "customer_id"
+      ],
+      "msg": "Field required",
+      "input": {
+        "full_name": "Taro Yamada",
+        "tel": "090-1234-5678",
+        "api_key": "secret-key-123"
+      }
+    }
+  ]
+}

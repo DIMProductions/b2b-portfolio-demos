@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  mock-upstream:
+    image: python:3.11-slim
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: sh -c "pip install fastapi uvicorn && uvicorn src.mock_upstream:app --host 0.0.0.0 --port 8001"
+    ports:
+      - "8001:8001"
+
+  bridge:
+    build: .
+    environment:
+      - UPSTREAM_URL=http://mock-upstream:8001/v1/customers
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+      - mock-upstream
+    ports:
+      - "8000:8000"

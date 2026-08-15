@@ -1,0 +1,69 @@
+suite: demo-regression
+tests:
+- id: LOGIN-001
+  name: Valid Login Flow
+  steps:
+  - action: goto
+    path: /login
+  - action: fill
+    target: email
+    value: demo@example.com
+  - action: fill
+    target: password
+    value: correct-password
+  - action: click
+    target: login-button
+  - action: expect_url
+    value: /dashboard
+- id: LOGIN-002
+  name: Invalid Login Flow (Expected Failure)
+  steps:
+  - action: goto
+    path: /login
+  - action: fill
+    target: email
+    value: wrong@example.com
+  - action: fill
+    target: password
+    value: bad
+  - action: click
+    target: login-button
+  - action: expect_text
+    target: error-msg
+    value: Invalid credentials
+- id: SEARCH-001
+  name: Product Search Flow
+  steps:
+  - action: goto
+    path: /search
+  - action: fill
+    target: query
+    value: Widget
+  - action: click
+    target: search-button
+  - action: expect_text
+    target: results
+    value: Widget Pro, Widget Mini
+- id: FORM-001
+  name: Contact Form Submission
+  steps:
+  - action: goto
+    path: /contact
+  - action: fill
+    target: name
+    value: Test User
+  - action: fill
+    target: message
+    value: Hello there
+  - action: click
+    target: submit-button
+  - action: expect_text
+    target: success-msg
+    value: Thank you, Test User! Your message has been received.
+- id: API-001
+  name: Health Endpoint Response Check
+  steps:
+  - action: api_get
+    path: /api/health
+  - action: expect_status
+    value: '200'

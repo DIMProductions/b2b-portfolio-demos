@@ -1,0 +1,7 @@
+{
+  "mappings": {
+    "customer_id": "id",
+    "full_name": "name.full",
+    "tel": "phone"
+  }
+}

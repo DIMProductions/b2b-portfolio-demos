@@ -1,0 +1,5 @@
+raw_data,source,error_type,error_msg
+"{'employee_id': 2002, 'name': 'Bob Lee', 'email': 'bob-example.com', 'department': 'Engineering'}",sample_02.pdf,SchemaValidationError,email: 'bob-example.com' does not match '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+"{'employee_id': 'N/A', 'name': 'No ID Given', 'email': 'noid@example.com', 'department': 'Legal'}",bulk_import.xlsx,SchemaValidationError,employee_id: 'N/A' is not of type 'integer'
+"{'employee_id': 3003, 'name': 'X', 'email': 'x@example.com', 'department': 'Legal'}",bulk_import.xlsx,SchemaValidationError,name: 'X' is too short
+"{'employee_id': 3004, 'name': 'Emi Sasaki', 'email': 'emi.example.com', 'department': 'Finance'}",bulk_import.xlsx,SchemaValidationError,email: 'emi.example.com' does not match '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
