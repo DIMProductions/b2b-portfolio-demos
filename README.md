@@ -17,14 +17,14 @@ demo-xxx/
 
 ## デモ一覧
 
-### [demo-structured-data-pipeline](demo-structured-data-pipeline/) — データ処理代行
+### [demo-structured-data-pipeline](demo-structured-data-pipeline/README.md) — データ処理代行
 PDF帳票 + Excel一括データ → 正規化・重複排除・JSON Schema検証 → `output.json` / `errors.csv` / `validation_report.json`。
 生成AIらしい「あいまいな補完」はせず、スキーマに合わないデータは即エラーとして分離します。同じ入力からは常に同じ出力(bit単位で再現可能)。
 
-### [demo-regression-pack](demo-regression-pack/) — テスト自動化(システム評価)
+### [demo-regression-pack](demo-regression-pack/README.md) — テスト自動化(システム評価)
 `test_spec.yaml`(人間が書くテスト仕様)を渡すだけで、Playwrightによるログイン・検索・フォーム送信・APIレスポンス確認までを自動実行。`junit.xml` / HTMLレポート / 失敗時スクリーンショット・トレースをGitHub Actions上でも生成します。
 
-### [demo-api-bridge](demo-api-bridge/) — API連携(モジュール請負)
+### [demo-api-bridge](demo-api-bridge/README.md) — API連携(モジュール請負)
 旧形式APIのリクエストを、フィールドマッピング・リトライ・タイムアウト・冪等性・構造化ログを備えたBridge経由で新形式APIに変換。単なる中継ではなく、本番投入を想定した堅牢性を実装しています。
 
 ## 実行方法
