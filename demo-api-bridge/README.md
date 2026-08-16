@@ -2,46 +2,43 @@
 
 > **概要(日本語)**: 旧形式APIのリクエストを、フィールドマッピング(外部設定ファイル)・リトライ(5xxのみ、指数バックオフ)・タイムアウト・冪等性制御(Redis)・構造化ログ(機密情報は自動マスク)を備えたBridge経由で新形式APIに変換します。単なる中継ではなく、本番投入を想定した堅牢性を実装済み。専用`Dockerfile`でビルドされる実際のデプロイ可能イメージです。起動は `docker-compose up --build` のみ。
 
-This repository demonstrates a production-ready API bridge that safely connects a legacy system to a modern SaaS backend.
-It is designed as an independent microservice that absorbs the complexity of integration without requiring changes to your core systems.
-
-## 5-Minute Overview: Data Flow
+## 5分でわかるデータフロー
 
 ```text
-Legacy API Payload
-        ↓ (Idempotency-Key Header)
-  Schema Validation (Pydantic: Block 4xx)
+旧形式APIペイロード
+        ↓ (Idempotency-Keyヘッダー)
+  スキーマ検証 (Pydantic: 4xxで遮断)
         ↓
-    Field Mapping (External Config File)
+    フィールドマッピング (外部設定ファイル)
         ↓
-  Idempotency Check (Redis: Prevent Duplicates)
+  冪等性チェック (Redis: 重複防止)
         ↓
-  Selective Retry & Timeout (Tenacity/httpx: 5xx only)
+  選択的リトライ & タイムアウト (Tenacity/httpx: 5xxのみ)
         ↓
-  Structured Logging (Redact Secrets, Correlation ID)
+  構造化ログ (機密マスキング、相関ID)
         ↓
-     New API (Upstream)
+     新形式API (Upstream)
 ```
 
-## Key Enterprise Features
-- **Strict Isolation**: Invalid incoming payloads are rejected immediately, protecting the upstream API.
-- **Idempotency**: Duplicate requests (e.g., from network retries by the legacy sender) are safely absorbed by Redis.
-- **Resilience**: Temporary upstream failures (5xx, timeouts) are retried with exponential backoff. Client errors (4xx) are NOT retried.
-- **Observability**: JSON-structured logging with Correlation IDs and automatic secret redaction.
-- **Packaged, not scripted**: The Bridge ships as its own [`Dockerfile`](Dockerfile) — a real deployable image, not just an inline shell command.
+## エンタープライズ機能
+- **厳格な入力隔離**: 不正なペイロードは即座に拒否し、upstream APIを保護
+- **冪等性**: 旧システム側のネットワークリトライ等による重複リクエストをRedisで安全に吸収
+- **レジリエンス**: 一時的なupstream障害(5xx、タイムアウト)は指数バックオフでリトライ。クライアントエラー(4xx)はリトライしない
+- **可観測性**: 相関IDと機密情報の自動マスキングを備えたJSON構造化ログ
+- **スクリプトではなくパッケージ**: Bridgeは専用の[`Dockerfile`](Dockerfile)から構築される、実際にデプロイ可能なイメージ
 
-## How to Run
+## 実行方法
 
-1. Start the Bridge, Redis, and Upstream Mock:
+1. Bridge・Redis・Upstreamモックを起動:
 ```bash
 docker-compose up --build
 ```
-2. Check `output/` for example responses and structured logs.
+2. `output/`でレスポンス例と構造化ログを確認
 
-## Acceptance Criteria
-See [docs/acceptance_criteria.md](docs/acceptance_criteria.md) for the mechanical definition of done.
+## 検収条件
+[docs/acceptance_criteria.md](docs/acceptance_criteria.md)を参照(完了の機械的な定義)。
 
-## Sample Work Order（初回発注例）
+## 初回発注例
 
 | 項目 | 内容 |
 | :--- | :--- |

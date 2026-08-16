@@ -1,10 +1,10 @@
-# Examples
+# サンプル事例
 
-Concrete before/after cases pulled from this repo's own bundled fixtures (`input/` → `output/`).
+本リポジトリに同梱の実データ(`input/` → `output/`)から抜き出した、具体的なbefore/afterです。
 
-## Normal case: valid record survives untouched
+## 正常系: 有効なレコードはそのまま通る
 
-`input/sample_01.pdf` contains a PDF-native onboarding form:
+`input/sample_01.pdf`はPDFネイティブの入社フォームです:
 
 ```
 Employee ID: 2001
@@ -13,7 +13,7 @@ Email: kenji@example.com
 Department: Sales
 ```
 
-It passes JSON Schema validation as-is and appears in `output/output.json`:
+そのままJSON Schema検証をPASSし、`output/output.json`に出力されます:
 
 ```json
 {
@@ -25,15 +25,15 @@ It passes JSON Schema validation as-is and appears in `output/output.json`:
 }
 ```
 
-## Error case: schema violation is rejected, not guessed
+## エラー系: スキーマ違反は推測せず拒否する
 
-`input/bulk_import.xlsx` row 5 has a name shorter than the schema's `minLength: 2`:
+`input/bulk_import.xlsx`の5行目は、スキーマの`minLength: 2`より短い名前です:
 
 ```
 employee_id=3003, name="X", email="x@example.com", department="Legal"
 ```
 
-The pipeline does **not** attempt to fix or drop the "X" — it rejects the whole record and records exactly why in `output/errors.csv` / `output/validation_report.json`:
+パイプラインは"X"を勝手に修正・削除する**ことはしません** — レコード全体を拒否し、`output/errors.csv` / `output/validation_report.json`に理由を正確に記録します:
 
 ```json
 {
@@ -44,6 +44,6 @@ The pipeline does **not** attempt to fix or drop the "X" — it rejects the whol
 }
 ```
 
-## Duplicate case: cross-source dedup
+## 重複系: ソースをまたいだ重複排除
 
-`input/sample_03.pdf` and row 1 of `input/bulk_import.xlsx` both describe `employee_id: 3001`. The PDF record (processed first, since PDFs are read before the Excel file) is kept; the Excel duplicate is removed and logged under `duplicates` in `output/validation_report.json` instead of silently overwriting or double-counting.
+`input/sample_03.pdf`と`input/bulk_import.xlsx`の1行目は、どちらも`employee_id: 3001`を示しています。先に処理されるPDF側のレコード(PDFがExcelより先に読み込まれるため)が残り、Excel側の重複は除外されて`output/validation_report.json`の`duplicates`に記録されます(サイレントな上書きや二重カウントはしません)。

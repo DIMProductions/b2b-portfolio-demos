@@ -2,47 +2,43 @@
 
 > **概要(日本語)**: `test_spec.yaml`にテスト仕様(ログイン・検索・フォーム送信・API疎通)を書くだけで、Playwrightによる自動E2Eテストが実行されます。結果は`junit.xml`・自己完結型HTMLレポート・失敗時のスクリーンショット/トレースとして出力され、GitHub Actions上でも同じ手順で再現されます。単体試験・結合試験工程の外注先として、そのまま検収可能な形で成果物が返ってくる想定です。起動は `docker-compose up --build` のみ。
 
-This repository demonstrates a highly maintainable automated E2E test suite. 
-Instead of writing fragile UI test code, human QA testers write strict YAML test specifications. 
-Our fixed Python Runner consumes this YAML and reliably executes a fixed set of safe Playwright actions (goto/fill/click/expect_*), producing rich enterprise-grade reports.
-
-## 5-Minute Overview: Data Flow
+## 5分でわかるデータフロー
 
 ```text
-YAML Test Spec (Excel/Spreadsheet Equivalent)
+YAMLテスト仕様 (Excel/スプレッドシート相当)
         ↓
-    Validation (Pydantic Schema)
+    バリデーション (Pydanticスキーマ)
         ↓
    Fixed Runner (Playwright + Pytest)
         ↓
   ┌─────────────┐
   │             │
- PASS        FAIL (with Screenshot)
+ PASS        FAIL (スクリーンショット付き)
   │             │
   └──────┬──────┘
          ↓
-  Enterprise Output
+  エンタープライズ出力
   - junit.xml
-  - report.html (self-contained)
-  - failure screenshots / traces
-  - CI/CD pipeline integration
+  - report.html (自己完結型)
+  - 失敗時スクリーンショット / トレース
+  - CI/CDパイプライン連携
 ```
 
-## Self-Contained Demo
-This repository includes a tiny bundled Web App (`src/dummy_app.py`) so tests run locally without relying on external internet connectivity or volatile third-party websites.
+## 自己完結型デモ
+外部のインターネット接続や不安定な第三者サイトに依存せず動作するよう、小さなWebアプリ(`src/dummy_app.py`)を同梱しています。
 
-## How to Run
+## 実行方法
 
-1. Start the target app and run tests:
+1. 対象アプリを起動し、テストを実行:
 ```bash
 docker-compose up --build
 ```
-2. Check `output/` for `junit.xml`, `report.html`, and failure screenshots.
+2. `output/`で`junit.xml`・`report.html`・失敗時スクリーンショットを確認
 
-## Acceptance Criteria
-See [docs/acceptance_criteria.md](docs/acceptance_criteria.md) for the mechanical definition of done.
+## 検収条件
+[docs/acceptance_criteria.md](docs/acceptance_criteria.md)を参照(完了の機械的な定義)。
 
-## Sample Work Order（初回発注例）
+## 初回発注例
 
 | 項目 | 内容 |
 | :--- | :--- |

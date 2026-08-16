@@ -1,25 +1,25 @@
-# Examples
+# サンプル事例
 
-## Normal case: 5 declarative tests, 5 green
+## 正常系: 宣言的なテスト5件、5件とも green
 
-`input/test_spec.yaml` covers four distinct flows purely through YAML — no test code is hand-written per scenario:
+`input/test_spec.yaml`は、シナリオごとにテストコードを手書きすることなく、YAMLだけで4種類の異なるフローをカバーしています:
 
-| ID | Flow |
+| ID | フロー |
 |---|---|
-| `LOGIN-001` | Login with valid credentials → redirected to `/dashboard` |
-| `LOGIN-002` | Login with invalid credentials → inline error message |
-| `SEARCH-001` | Product search form → filtered results text |
-| `FORM-001` | Contact form submission → confirmation message |
-| `API-001` | Direct API call (`GET /api/health`) → status code assertion |
+| `LOGIN-001` | 正しい認証情報でログイン → `/dashboard`へリダイレクト |
+| `LOGIN-002` | 誤った認証情報でログイン → インラインエラーメッセージ |
+| `SEARCH-001` | 商品検索フォーム → 絞り込み結果テキスト |
+| `FORM-001` | お問い合わせフォーム送信 → 完了メッセージ |
+| `API-001` | API直接呼び出し(`GET /api/health`) → ステータスコード検証 |
 
-Running `pytest tests/test_runner.py` turns each YAML entry into its own parametrized, independently reported test case.
+`pytest tests/test_runner.py`を実行すると、YAMLの各エントリがそれぞれ独立したパラメータ化テストケースとして実行・レポートされます。
 
-## Failure case: what a FAIL looks like
+## 異常系: FAILとはどう見えるか
 
-`failing_spec_example.yaml` in this folder has one step with a wrong expected value on purpose. Pointing the runner at it (see the comment inside the file) produces:
+このフォルダの`failing_spec_example.yaml`は、わざと1ステップの期待値を間違えたものです。ランナーをこのファイルに向けて実行すると(ファイル内のコメント参照)、以下が生成されます:
 
-- `output/junit.xml` — the case reported as `<failure>`, not silently skipped
-- `output/screenshots/.../test-failed-1.png` — full-page screenshot at the moment of failure
-- `output/screenshots/.../trace.zip` — a Playwright trace (open with `playwright show-trace trace.zip`) showing every action, network call, and DOM state leading up to the failure
+- `output/junit.xml` — 該当ケースが`<failure>`として記録される(サイレントにスキップされない)
+- `output/screenshots/.../test-failed-1.png` — 失敗時点のフルページスクリーンショット
+- `output/screenshots/.../trace.zip` — Playwrightトレース(`playwright show-trace trace.zip`で開ける)。失敗に至るまでの全アクション・通信・DOM状態を確認可能
 
-This was verified directly: running the runner against a deliberately broken assertion produced exactly those two artifact files, confirming `docs/acceptance_criteria.md` criterion 4 (Failure Traceability) actually holds, not just in theory.
+これは実際に検証済みです: 意図的に壊したアサーションに対してランナーを実行し、上記2つの証跡ファイルが実際に生成されることを確認しました。`docs/acceptance_criteria.md`の項目4(失敗の追跡可能性)が理論上だけでなく実際に成立していることの証拠です。

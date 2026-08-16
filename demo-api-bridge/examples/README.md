@@ -1,8 +1,8 @@
-# Examples
+# サンプル事例
 
-## Normal case: legacy payload → new API shape
+## 正常系: 旧形式ペイロード → 新形式API
 
-Request to the Bridge (`POST /bridge/sync`, header `Idempotency-Key: <uuid>`):
+Bridgeへのリクエスト(`POST /bridge/sync`、ヘッダー`Idempotency-Key: <uuid>`):
 
 ```json
 {
@@ -13,7 +13,7 @@ Request to the Bridge (`POST /bridge/sync`, header `Idempotency-Key: <uuid>`):
 }
 ```
 
-`input/mapping_rules.json` drives the transformation (`customer_id → id`, `full_name → name.full`, `tel → phone`) before the Bridge forwards it upstream:
+`input/mapping_rules.json`が変換を制御します(`customer_id → id`、`full_name → name.full`、`tel → phone`)。Bridgeはこれをupstreamへ転送する前に変換します:
 
 ```json
 {
@@ -25,12 +25,12 @@ Request to the Bridge (`POST /bridge/sync`, header `Idempotency-Key: <uuid>`):
 }
 ```
 
-`api_key` is intentionally dropped by the mapping (never forwarded upstream) and is redacted (`***`) in every log line — see `output/example_logs.jsonl`.
+`api_key`はマッピングの時点で意図的に除外され(upstreamには一切転送されない)、全てのログ行でマスキング(`***`)されます — `output/example_logs.jsonl`参照。
 
-## Error case: upstream retries then succeeds
+## エラー系: upstreamがリトライの末に成功する
 
-`src/mock_upstream.py` simulates a flaky upstream that returns `503` on its first two calls, then `200` on the third. The Bridge's `tenacity`-based retry (exponential backoff, max 3 attempts) absorbs this transparently — the caller only ever sees the final `200`. This was verified directly: a live request against the real mock-upstream process showed two `503` responses logged, followed by one `200`, all within a single client-facing call. See `output/success_response.json` / `output/upstream_error.json` for the two possible terminal outcomes (retries exhausted vs. succeeded).
+`src/mock_upstream.py`は、最初の2回は`503`を返し3回目に`200`を返す不安定なupstreamをシミュレートします。Bridgeの`tenacity`ベースのリトライ(指数バックオフ、最大3回)がこれを透過的に吸収するため、呼び出し側には最終的な`200`しか見えません。これは実際に検証済みです: 実際に動作中のmock-upstreamプロセスに対してリクエストを送ったところ、`503`が2回ログに記録された後に`200`が1回記録され、これがすべて呼び出し元から見た1回のリクエスト内で完結していることを確認しました。2つの最終的な結果(リトライ枯渇 vs 成功)については`output/success_response.json` / `output/upstream_error.json`を参照してください。
 
-## Idempotency case: same key, no duplicate upstream call
+## 冪等性系: 同一キーでupstreamへの重複呼び出しなし
 
-Sending the same request twice with the same `Idempotency-Key` results in the second call hitting Redis and returning the cached response — the mock-upstream process's flaky-failure counter does not advance on the second call, confirming the upstream was never re-invoked.
+同一の`Idempotency-Key`で同じリクエストを2回送ると、2回目はRedisにヒットしてキャッシュされたレスポンスが返されます。mock-upstreamプロセス側の不安定挙動用カウンターは2回目の呼び出しで進まないため、upstreamが実際には再呼び出しされていないことが確認できます。
