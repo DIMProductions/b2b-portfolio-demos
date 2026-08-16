@@ -1,14 +1,14 @@
-# Acceptance Criteria (検収条件)
+# 検収条件
 
-## PASS Conditions
-1. **Schema Validation**: The runner MUST validate `test_spec.yaml` against a strict Pydantic schema before execution. Any undefined actions (e.g., `action: hack`) MUST be rejected immediately.
-2. **Execution Match**: The number of executed test cases in the output MUST exactly match the number of test cases defined in the YAML file.
-3. **Enterprise Reporting**: The test run MUST produce a standard `junit.xml` reflecting accurate PASS/FAIL states.
-4. **Failure Traceability**: If a test fails, a screenshot OR trace file MUST be generated automatically in `output/screenshots/`.
-5. **Idempotency**: Running the same YAML spec against the same target environment MUST yield identical action sequences.
-6. **CI/CD Parity**: The CI configuration (`.github/workflows/regression.yml` at the repo root) MUST use the exact same fixed runner used locally.
+## PASS条件
+1. **スキーマ検証**: ランナーは実行前に`test_spec.yaml`を厳密なPydanticスキーマで検証すること。未定義のaction(例: `action: hack`)は即座に拒否されること。
+2. **実行数の一致**: 出力上の実行済みテストケース数は、YAMLファイルに定義されたテストケース数と厳密に一致すること。
+3. **エンタープライズレポート**: テスト実行は、正確なPASS/FAIL状態を反映した標準の`junit.xml`を出力すること。
+4. **失敗の追跡可能性**: テストが失敗した場合、`output/screenshots/`にスクリーンショットまたはトレースファイルが自動生成されること。
+5. **冪等性**: 同一のYAML仕様を同一の対象環境に対して実行した場合、同一のaction列が実行されること。
+6. **CI/CDの再現性**: CI設定(リポジトリルートの`.github/workflows/regression.yml`)は、ローカルで使用しているものと完全に同じ固定ランナーを使用すること。
 
-## Out of Scope (除外事項)
-* **Code Generation**: The runner DOES NOT generate arbitrary Python code from YAML (which creates security risks and unmaintainable code). It dynamically parses and executes a fixed set of safe actions.
-* **Complex Logic in YAML**: Branching (`if/else`) or loops within the YAML test spec are not supported. Tests must be declarative and linear.
-* **Target Environment Provisioning**: The provisioning of the staging/production database state is assumed to be handled outside this module.
+## 対象外
+* **コード生成**: ランナーはYAMLから任意のPythonコードを生成しません(セキュリティリスクと保守性の問題を避けるため)。安全な操作の固定セットを動的に解釈・実行します。
+* **YAML内の複雑なロジック**: YAMLテスト仕様内での分岐(`if/else`)やループはサポートしません。テストは宣言的かつ線形である必要があります。
+* **対象環境の構築**: ステージング/本番データベースの状態構築は、本モジュールの範囲外とし、外部で対応するものとします。

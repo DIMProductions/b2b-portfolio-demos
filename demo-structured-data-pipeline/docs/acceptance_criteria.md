@@ -1,16 +1,16 @@
-# Acceptance Criteria (検収条件)
+# 検収条件
 
-This project is built for B2B subcontracting. The "Definition of Done" is strictly mechanical and verifiable without human subjectivity.
+本プロジェクトはB2Bの請負を想定して構築されています。「完了の定義」は、人の主観を挟まず機械的に検証可能な形で定めています。
 
-## PASS Conditions
-1. **Schema Compliance**: The data in `output/output.json` MUST pass 100% validation against `input/schema.json`.
-2. **Error Isolation**: Any record that fails validation MUST be written to `output/errors.csv` and `output/validation_report.json`. The main process MUST NOT crash.
-3. **Duplicate Isolation**: Records sharing the same `employee_id` as an earlier record MUST be removed before validation and logged under `duplicates` in `output/validation_report.json`, not silently merged.
-4. **Data Integrity**: `duplicates_removed + valid_count + error_count` MUST exactly equal `total_ingested` (the raw record count extracted from all PDF/Excel inputs).
-5. **Idempotency**: Running `python src/run.py` multiple times on the same input MUST produce the exact same output bytes.
-6. **Test Coverage**: Running `pytest tests/` MUST result in a 100% PASS rate.
+## PASS条件
+1. **スキーマ準拠**: `output/output.json`のデータは`input/schema.json`に対して100%バリデーションをPASSしていること。
+2. **エラー隔離**: バリデーションに失敗したレコードは`output/errors.csv`と`output/validation_report.json`に必ず記録されること。メインプロセスがクラッシュしないこと。
+3. **重複隔離**: 既出のレコードと同じ`employee_id`を持つレコードは、バリデーション前に除外され、`output/validation_report.json`の`duplicates`に記録されること(サイレントにマージされないこと)。
+4. **データ整合性**: `duplicates_removed + valid_count + error_count`が`total_ingested`(全PDF/Excel入力から抽出した生レコード総数)と厳密に一致すること。
+5. **冪等性**: `python src/run.py`を同一入力に対して複数回実行しても、出力が完全に同一のバイト列であること。
+6. **テストカバレッジ**: `pytest tests/`の実行結果が100% PASSであること。
 
-## Out of Scope (除外事項)
-* **OCR / Scanned Documents**: Only native text PDF/Excel files are supported (no scanned images).
-* **AI Imputation**: Missing values are not guessed. They trigger a validation error.
-* **Direct DB Insertion**: This module acts as a pure converter. Deployment to or direct mutation of production databases is not included.
+## 対象外
+* **OCR / スキャン文書**: ネイティブテキストのPDF/Excelのみ対応(スキャン画像は対象外)。
+* **AIによる補完**: 欠損値を推測することはしません。バリデーションエラーとして検出されます。
+* **本番DBへの直接書き込み**: 本モジュールは純粋な変換器として動作します。本番データベースへのデプロイや直接的な変更は含みません。
