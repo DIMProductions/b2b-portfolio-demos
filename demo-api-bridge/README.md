@@ -40,3 +40,13 @@ docker-compose up --build
 
 ## Acceptance Criteria
 See [docs/acceptance_criteria.md](docs/acceptance_criteria.md) for the mechanical definition of done.
+
+## Sample Work Order（初回発注例）
+
+| 項目 | 内容 |
+| :--- | :--- |
+| **入力** | 旧API形式のサンプルペイロード + フィールドマッピング定義（旧→新） |
+| **納品** | Bridgeコンテナ（`Dockerfile`一式）、`mapping_rules.json`、テストコード（冪等性/リトライ/バリデーション）、README |
+| **納期** | 3〜5営業日（リトライ・冪等性の検証を含むため） |
+| **検収** | 指定マッピング通りの変換／5xxのみリトライ・4xxは即時エラー／同一Idempotency-Keyで重複実行されない／機密値がログに残らない |
+| **本番DBアクセス** | 不要（Redisは同梱、外部秘密情報の受け渡し不要） |

@@ -42,3 +42,13 @@ python src/run.py
 
 ## Acceptance Criteria
 See [docs/acceptance_criteria.md](docs/acceptance_criteria.md) for the mechanical definition of done.
+
+## Sample Work Order（初回発注例）
+
+| 項目 | 内容 |
+| :--- | :--- |
+| **入力** | PDF/Excel 合計20ファイルまで + 出力JSON Schema |
+| **納品** | JSON / CSV、変換スクリプト、`errors.csv`、`validation_report.json`、README |
+| **納期** | 3営業日 |
+| **検収** | 指定Schema PASS／不正データ全件隔離／同一入力→同一出力 |
+| **本番DBアクセス** | 不要 |

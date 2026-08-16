@@ -4,7 +4,7 @@
 
 This repository demonstrates a highly maintainable automated E2E test suite. 
 Instead of writing fragile UI test code, human QA testers write strict YAML test specifications. 
-Our fixed Python Runner consumes this YAML and reliably executes Playwright actions using a Page Object Model (POM), producing rich enterprise-grade reports.
+Our fixed Python Runner consumes this YAML and reliably executes a fixed set of safe Playwright actions (goto/fill/click/expect_*), producing rich enterprise-grade reports.
 
 ## 5-Minute Overview: Data Flow
 
@@ -41,3 +41,13 @@ docker-compose up --build
 
 ## Acceptance Criteria
 See [docs/acceptance_criteria.md](docs/acceptance_criteria.md) for the mechanical definition of done.
+
+## Sample Work Order（初回発注例）
+
+| 項目 | 内容 |
+| :--- | :--- |
+| **入力** | `test_spec.yaml`（テストケース10件程度まで）+ 対象URL（ステージング環境等） |
+| **納品** | テストコード一式、`junit.xml`、`report.html`、失敗時スクリーンショット/トレース、README |
+| **納期** | 3営業日 |
+| **検収** | 記載した全テストケースが実行される／PASS・FAILが`junit.xml`に正しく反映される／失敗時に証跡（スクリーンショット・トレース）が残る |
+| **本番DBアクセス** | 不要（対象URLへのHTTPアクセスのみ） |

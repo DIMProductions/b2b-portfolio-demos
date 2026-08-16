@@ -1,0 +1,28 @@
+name: Structured Data Pipeline
+
+on:
+  push:
+    paths:
+      - 'demo-structured-data-pipeline/**'
+      - '.github/workflows/structured-data.yml'
+  pull_request:
+    paths:
+      - 'demo-structured-data-pipeline/**'
+      - '.github/workflows/structured-data.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo-structured-data-pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pipeline in Docker
+        run: docker compose up --build --exit-code-from pipeline
+      - name: Upload output artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: structured-data-output
+          path: demo-structured-data-pipeline/output/

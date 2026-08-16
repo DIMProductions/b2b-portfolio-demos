@@ -1,0 +1,28 @@
+name: Regression Pack
+
+on:
+  push:
+    paths:
+      - 'demo-regression-pack/**'
+      - '.github/workflows/regression.yml'
+  pull_request:
+    paths:
+      - 'demo-regression-pack/**'
+      - '.github/workflows/regression.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo-regression-pack
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests in Docker
+        run: docker compose up --build --exit-code-from test-runner
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-pack-output
+          path: demo-regression-pack/output/

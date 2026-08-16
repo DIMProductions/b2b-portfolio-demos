@@ -6,7 +6,7 @@
 3. **Enterprise Reporting**: The test run MUST produce a standard `junit.xml` reflecting accurate PASS/FAIL states.
 4. **Failure Traceability**: If a test fails, a screenshot OR trace file MUST be generated automatically in `output/screenshots/`.
 5. **Idempotency**: Running the same YAML spec against the same target environment MUST yield identical action sequences.
-6. **CI/CD Parity**: The CI configuration (`.github/workflows/playwright.yml`) MUST use the exact same fixed runner used locally.
+6. **CI/CD Parity**: The CI configuration (`.github/workflows/regression.yml` at the repo root) MUST use the exact same fixed runner used locally.
 
 ## Out of Scope (除外事項)
 * **Code Generation**: The runner DOES NOT generate arbitrary Python code from YAML (which creates security risks and unmaintainable code). It dynamically parses and executes a fixed set of safe actions.
