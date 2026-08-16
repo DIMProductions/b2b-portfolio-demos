@@ -24,6 +24,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run unit tests
-        run: pytest tests/ -v
+        run: python -m pytest tests/ -v
       - name: Verify Dockerfile builds
         run: docker build -t api-bridge-check .
