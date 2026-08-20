@@ -105,4 +105,6 @@ def test_secret_is_not_written_to_logs(caplog):
     assert response.status_code == 200
     log_text = "\n".join(caplog.messages)
     assert VALID_PAYLOAD["api_key"] not in log_text
+    assert VALID_PAYLOAD["full_name"] not in log_text
+    assert VALID_PAYLOAD["tel"] not in log_text
     assert "***" in log_text

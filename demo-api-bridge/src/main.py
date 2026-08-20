@@ -27,10 +27,13 @@ class LegacyPayload(BaseModel):
 app = FastAPI(title="API Bridge Enterprise Connector")
 
 # --- Helpers ---
+# Anything that identifies a person or authenticates a request is masked in
+# logs, not just credential-shaped fields — a name or phone number leaking
+# into log storage is the same class of incident as a leaked API key.
+SENSITIVE_FIELDS = {"api_key", "password", "token", "secret", "full_name", "name", "tel", "phone", "email", "address"}
+
 def redact(payload: dict) -> dict:
-    safe = payload.copy()
-    if "api_key" in safe: safe["api_key"] = "***"
-    return safe
+    return {k: ("***" if k.lower() in SENSITIVE_FIELDS else v) for k, v in payload.items()}
 
 def log_event(req_id: str, level: int, msg: str, **kwargs):
     log_record = {"request_id": req_id, "msg": msg, **kwargs}
