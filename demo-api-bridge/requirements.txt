@@ -4,6 +4,7 @@ pydantic
 httpx
 tenacity
 redis
+cryptography
 pytest
 respx
 fakeredis

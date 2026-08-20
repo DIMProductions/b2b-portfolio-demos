@@ -7,12 +7,24 @@ from typing import Optional
 from fastapi import FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, retry_if_result
+from cryptography.fernet import Fernet, InvalidToken
 import redis.asyncio as redis
 
 # --- Configuration & Logging ---
 UPSTREAM_URL = os.getenv("UPSTREAM_URL", "http://localhost:8001/v1/customers")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = redis.from_url(REDIS_URL)
+
+# The idempotency cache stores real request/response payloads (which may
+# contain PII). Redis auth only controls who can *connect* — it does not
+# stop a raw memory/disk dump of the Redis process from exposing that data,
+# so cache values are encrypted here as well, independent of Redis's own
+# access control. Set CACHE_ENCRYPTION_KEY explicitly in real deployments;
+# without it, a fresh key is generated per process (cache entries simply
+# miss across restarts, which is a safe failure mode for a cache).
+_cache_key_env = os.getenv("CACHE_ENCRYPTION_KEY")
+CACHE_ENCRYPTION_KEY = _cache_key_env.encode() if _cache_key_env else Fernet.generate_key()
+fernet = Fernet(CACHE_ENCRYPTION_KEY)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("api_bridge")
@@ -86,9 +98,13 @@ async def bridge_sync(
     cache_key = f"idem:{idempotency_key}"
     cached = await redis_client.get(cache_key)
     if cached:
-        log_event(req_id, logging.INFO, "Idempotency cache hit")
-        return json.loads(cached)
-        
+        try:
+            result = json.loads(fernet.decrypt(cached))
+            log_event(req_id, logging.INFO, "Idempotency cache hit")
+            return result
+        except InvalidToken:
+            log_event(req_id, logging.WARNING, "Idempotency cache entry undecryptable; reprocessing")
+
     new_payload = map_payload(payload.model_dump())
     
     try:
@@ -103,7 +119,7 @@ async def bridge_sync(
             raise HTTPException(status_code=502, detail="Upstream service unavailable")
             
         result = resp.json()
-        await redis_client.setex(cache_key, 3600, json.dumps(result))
+        await redis_client.setex(cache_key, 3600, fernet.encrypt(json.dumps(result).encode()))
         log_event(req_id, logging.INFO, "Success")
         return result
         
