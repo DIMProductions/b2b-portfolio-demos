@@ -66,3 +66,17 @@ def test_end_to_end_pipeline_on_bundled_fixtures():
 
     valid = json.loads(Path("output/output.json").read_text(encoding="utf-8"))
     assert {r["employee_id"] for r in valid} == {2001, 3001, 3002}
+
+
+def test_corrupt_file_is_isolated_not_crashed():
+    """A future bug or a genuinely malformed input file must not crash the
+    whole batch — it gets isolated the same way a bad record does."""
+    bad_pdf = Path("input/_corrupt_test.pdf")
+    bad_pdf.write_bytes(b"not a real pdf \x00\x01\x02")
+    try:
+        process_pipeline()  # must not raise
+        report = json.loads(Path("output/validation_report.json").read_text(encoding="utf-8"))
+        assert any(fe["source"] == "_corrupt_test.pdf" for fe in report["file_errors"])
+    finally:
+        bad_pdf.unlink()
+        process_pipeline()  # restore output/ to match the real fixtures only

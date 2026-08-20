@@ -80,10 +80,19 @@ def process_pipeline():
     validator = jsonschema.Draft7Validator(schema)
 
     raw_records = []
+    file_errors = []
     for pdf_path in sorted(INPUT_DIR.glob("*.pdf")):
-        raw_records.extend(extract_pdf(pdf_path))
+        try:
+            raw_records.extend(extract_pdf(pdf_path))
+        except Exception as e:
+            # One corrupt file must not crash the whole batch — isolate it
+            # the same way a bad record is isolated, and keep going.
+            file_errors.append({"source": pdf_path.name, "error_type": type(e).__name__})
     for xlsx_path in sorted(INPUT_DIR.glob("*.xlsx")):
-        raw_records.extend(extract_excel(xlsx_path))
+        try:
+            raw_records.extend(extract_excel(xlsx_path))
+        except Exception as e:
+            file_errors.append({"source": xlsx_path.name, "error_type": type(e).__name__})
 
     total_ingested = len(raw_records)
     raw_records = [coerce_employee_id(r) for r in raw_records]
@@ -139,6 +148,7 @@ def process_pipeline():
         "error_count": len(error_records),
         "duplicates": duplicates,
         "errors": error_records,
+        "file_errors": file_errors,
     }
     (OUTPUT_DIR / "validation_report.json").write_text(
         json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -147,7 +157,8 @@ def process_pipeline():
     print(
         f"Pipeline finished. Ingested: {total_ingested}, "
         f"Duplicates removed: {len(duplicates)}, "
-        f"Valid: {len(valid_records)}, Errors: {len(error_records)}"
+        f"Valid: {len(valid_records)}, Errors: {len(error_records)}, "
+        f"File errors: {len(file_errors)}"
     )
 
 

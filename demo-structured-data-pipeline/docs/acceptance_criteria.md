@@ -4,7 +4,7 @@
 
 ## PASS条件
 1. **スキーマ準拠**: `output/output.json`のデータは`input/schema.json`に対して100%バリデーションをPASSしていること。
-2. **エラー隔離**: バリデーションに失敗したレコードは`output/errors.csv`と`output/validation_report.json`に必ず記録されること。メインプロセスがクラッシュしないこと。
+2. **エラー隔離**: バリデーションに失敗したレコードは`output/errors.csv`と`output/validation_report.json`に必ず記録されること。メインプロセスがクラッシュしないこと。破損・想定外の形式のファイルが1件混入しても、そのファイルだけが`validation_report.json`の`file_errors`に隔離され、バッチ全体は完走すること(記録するのは例外の型名のみで、例外メッセージ本文は記録しない)。
 3. **重複隔離**: 既出のレコードと同じ`employee_id`を持つレコードは、バリデーション前に除外され、`output/validation_report.json`の`duplicates`に記録されること(サイレントにマージされないこと)。
 4. **データ整合性**: `duplicates_removed + valid_count + error_count`が`total_ingested`(全PDF/Excel入力から抽出した生レコード総数)と厳密に一致すること。
 5. **冪等性**: `python src/run.py`を同一入力に対して複数回実行しても、出力が完全に同一のバイト列であること。

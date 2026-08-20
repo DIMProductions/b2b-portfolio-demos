@@ -71,5 +71,6 @@
       "error_type": "SchemaValidationError",
       "error_msg": "email: 'emi.example.com' does not match '^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$'"
     }
-  ]
+  ],
+  "file_errors": []
 }

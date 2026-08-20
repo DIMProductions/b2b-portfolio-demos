@@ -116,24 +116,33 @@ async def bridge_sync(
         except InvalidToken:
             log_event(req_id, logging.WARNING, "Idempotency cache entry undecryptable; reprocessing")
 
-    new_payload = map_payload(payload.model_dump())
-    
     try:
+        new_payload = map_payload(payload.model_dump())
+
         async with httpx.AsyncClient() as client:
             resp = await send_to_upstream(client, new_payload, req_id)
-            
+
         if 400 <= resp.status_code < 500:
             log_event(req_id, logging.ERROR, "Upstream 4xx Client Error (Not retried)")
             raise HTTPException(status_code=resp.status_code, detail="Upstream validation failed")
-            
+
         if resp.status_code >= 500:
             raise HTTPException(status_code=502, detail="Upstream service unavailable")
-            
+
         result = resp.json()
         await redis_client.setex(cache_key, 3600, fernet.encrypt(json.dumps(result).encode()))
         log_event(req_id, logging.INFO, "Success")
         return result
-        
+
     except httpx.RequestError as e:
         log_event(req_id, logging.ERROR, f"Upstream connection error: {str(e)}")
         raise HTTPException(status_code=504, detail="Upstream Gateway Timeout")
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Safety net for bugs we haven't written yet: whatever broke, the
+        # caller gets a generic 500 — never the exception message (which
+        # can embed the offending value, e.g. a KeyError repeats the key)
+        # and never a traceback. Only the exception's class name is logged.
+        log_event(req_id, logging.ERROR, f"Unhandled error: {type(e).__name__}")
+        raise HTTPException(status_code=500, detail="Internal error")

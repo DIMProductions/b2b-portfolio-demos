@@ -133,3 +133,29 @@ def test_secret_is_not_written_to_logs(caplog):
     assert VALID_PAYLOAD["full_name"] not in log_text
     assert VALID_PAYLOAD["tel"] not in log_text
     assert "***" in log_text
+
+
+def test_unexpected_bug_does_not_leak_payload_or_traceback(monkeypatch, caplog):
+    """A future bug in map_payload (or anywhere else in the try block) must
+    not turn into a leak: no payload contents, no exception message, no
+    traceback in the HTTP response or the logs — just a generic 500."""
+
+    def broken_map_payload(legacy):
+        # Simulate a defect whose exception message embeds sensitive data —
+        # the worst case for this safety net, not the best case.
+        raise KeyError(f"missing mapping for {legacy['full_name']}")
+
+    monkeypatch.setattr(main, "map_payload", broken_map_payload)
+
+    with caplog.at_level(logging.INFO):
+        response = client.post(
+            "/bridge/sync", json=VALID_PAYLOAD, headers=headers(idempotency_key="crash-key-006")
+        )
+
+    assert response.status_code == 500
+    assert VALID_PAYLOAD["full_name"] not in response.text
+    assert VALID_PAYLOAD["api_key"] not in response.text
+    assert "Traceback" not in response.text
+
+    log_text = "\n".join(caplog.messages)
+    assert VALID_PAYLOAD["full_name"] not in log_text
