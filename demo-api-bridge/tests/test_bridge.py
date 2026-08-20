@@ -17,6 +17,15 @@ VALID_PAYLOAD = {
     "api_key": "top-secret-value",
 }
 
+AUTH_HEADER = {"X-Bridge-Auth": main.BRIDGE_API_KEY}
+
+
+def headers(idempotency_key=None, auth=True):
+    h = dict(AUTH_HEADER) if auth else {}
+    if idempotency_key:
+        h["Idempotency-Key"] = idempotency_key
+    return h
+
 
 @pytest.fixture(autouse=True)
 def fresh_redis():
@@ -31,9 +40,25 @@ def test_health():
 
 
 def test_missing_idempotency_key():
-    response = client.post("/bridge/sync", json=VALID_PAYLOAD)
+    response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers())
     assert response.status_code == 400
     assert "Idempotency-Key" in response.text
+
+
+@respx.mock(assert_all_called=False)
+def test_missing_or_wrong_auth_header_is_rejected():
+    route = respx.post(main.UPSTREAM_URL).mock(return_value=httpx.Response(200, json={}))
+
+    no_auth = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers(idempotency_key="auth-key-006", auth=False))
+    wrong_auth = client.post(
+        "/bridge/sync",
+        json=VALID_PAYLOAD,
+        headers={"X-Bridge-Auth": "not-the-real-key", "Idempotency-Key": "auth-key-006"},
+    )
+
+    assert no_auth.status_code == 401
+    assert wrong_auth.status_code == 401
+    assert route.call_count == 0  # an unauthenticated caller must never reach upstream
 
 
 @respx.mock
@@ -41,10 +66,10 @@ def test_duplicate_idempotency_key_returns_cached_result():
     route = respx.post(main.UPSTREAM_URL).mock(
         return_value=httpx.Response(200, json={"status": "success", "upstream_id": "001"})
     )
-    headers = {"Idempotency-Key": "dup-key-001"}
+    h = headers(idempotency_key="dup-key-001")
 
-    first = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers)
-    second = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers)
+    first = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=h)
+    second = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=h)
 
     assert first.status_code == 200
     assert second.status_code == 200
@@ -61,9 +86,8 @@ def test_upstream_500_is_retried():
             httpx.Response(200, json={"status": "success", "upstream_id": "002"}),
         ]
     )
-    headers = {"Idempotency-Key": "retry-key-002"}
 
-    response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers)
+    response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers(idempotency_key="retry-key-002"))
 
     assert response.status_code == 200
     assert route.call_count == 3
@@ -72,9 +96,8 @@ def test_upstream_500_is_retried():
 @respx.mock
 def test_upstream_400_is_not_retried():
     route = respx.post(main.UPSTREAM_URL).mock(return_value=httpx.Response(400))
-    headers = {"Idempotency-Key": "no-retry-key-003"}
 
-    response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers)
+    response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers(idempotency_key="no-retry-key-003"))
 
     assert response.status_code == 400
     assert route.call_count == 1  # 4xx must not trigger a tenacity retry
@@ -84,9 +107,10 @@ def test_upstream_400_is_not_retried():
 def test_invalid_payload_never_reaches_upstream():
     route = respx.post(main.UPSTREAM_URL).mock(return_value=httpx.Response(200, json={}))
     incomplete_payload = {"full_name": "Taro Yamada", "tel": "090", "api_key": "sec"}  # missing customer_id
-    headers = {"Idempotency-Key": "invalid-payload-key-004"}
 
-    response = client.post("/bridge/sync", json=incomplete_payload, headers=headers)
+    response = client.post(
+        "/bridge/sync", json=incomplete_payload, headers=headers(idempotency_key="invalid-payload-key-004")
+    )
 
     assert response.status_code == 422
     assert route.call_count == 0
@@ -97,10 +121,11 @@ def test_secret_is_not_written_to_logs(caplog):
     respx.post(main.UPSTREAM_URL).mock(
         return_value=httpx.Response(200, json={"status": "success", "upstream_id": "005"})
     )
-    headers = {"Idempotency-Key": "secret-redact-key-005"}
 
     with caplog.at_level(logging.INFO):
-        response = client.post("/bridge/sync", json=VALID_PAYLOAD, headers=headers)
+        response = client.post(
+            "/bridge/sync", json=VALID_PAYLOAD, headers=headers(idempotency_key="secret-redact-key-005")
+        )
 
     assert response.status_code == 200
     log_text = "\n".join(caplog.messages)

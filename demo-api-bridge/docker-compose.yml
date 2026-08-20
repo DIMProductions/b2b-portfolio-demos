@@ -21,6 +21,9 @@ services:
     environment:
       - UPSTREAM_URL=http://mock-upstream:8001/v1/customers
       - REDIS_URL=redis://:${REDIS_PASSWORD:-demo-local-only}@redis:6379
+      # Demo-only default. Override BRIDGE_API_KEY in a real deployment —
+      # this is the shared secret the legacy sender must present.
+      - BRIDGE_API_KEY=${BRIDGE_API_KEY:-demo-local-only}
     depends_on:
       - redis
       - mock-upstream

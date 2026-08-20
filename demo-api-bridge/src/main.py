@@ -1,5 +1,6 @@
 import os
 import json
+import secrets
 import uuid
 import httpx
 import logging
@@ -14,6 +15,12 @@ import redis.asyncio as redis
 UPSTREAM_URL = os.getenv("UPSTREAM_URL", "http://localhost:8001/v1/customers")
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = redis.from_url(REDIS_URL)
+
+# The legacy sender must prove it's actually the legacy sender before the
+# Bridge does anything — without this, /bridge/sync accepts payloads from
+# anyone who can reach it. Demo-only default; set BRIDGE_API_KEY explicitly
+# in a real deployment.
+BRIDGE_API_KEY = os.getenv("BRIDGE_API_KEY", "demo-local-only")
 
 # The idempotency cache stores real request/response payloads (which may
 # contain PII). Redis auth only controls who can *connect* — it does not
@@ -86,12 +93,16 @@ async def health():
 
 @app.post("/bridge/sync")
 async def bridge_sync(
-    payload: LegacyPayload, 
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key")
+    payload: LegacyPayload,
+    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    caller_key: Optional[str] = Header(None, alias="X-Bridge-Auth"),
 ):
+    if not caller_key or not secrets.compare_digest(caller_key, BRIDGE_API_KEY):
+        raise HTTPException(status_code=401, detail="Invalid or missing X-Bridge-Auth header")
+
     req_id = str(uuid.uuid4())
     log_event(req_id, logging.INFO, "Request received", payload=redact(payload.model_dump()))
-    
+
     if not idempotency_key:
         raise HTTPException(status_code=400, detail="Idempotency-Key header is required")
         
